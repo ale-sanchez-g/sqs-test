@@ -1,0 +1,27 @@
+{
+  "name": "sqs-test",
+  "version": "0.0.1",
+  "description": "Test how to test an SQS queue in node",
+  "scripts": {
+    "build": "docker build -t sqs-mock .",
+    "start": "docker run --name sqs-mock -p 9324:9324 -p 9325:9325 -d sqs-mock",
+    "test": "node testSQS.js",
+    "e2e_test": "newman run SQS_test.postman_collection.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ale-sanchez-g/sqs-test.git"
+  },
+  "author": "Alejandro Sanchez Giraldo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ale-sanchez-g/sqs-test/issues"
+  },
+  "homepage": "https://github.com/ale-sanchez-g/sqs-test#readme",
+  "dependencies": {
+    "aws-sdk": "^2.1152.0"
+  },
+  "devDependencies": {
+    "newman": "^5.3.2"
+  }
+}

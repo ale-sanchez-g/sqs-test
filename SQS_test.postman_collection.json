@@ -1,0 +1,207 @@
+{
+	"info": {
+		"_postman_id": "2fd26779-b225-47d0-9a50-833230bd7b65",
+		"name": "SQS_test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2684003"
+	},
+	"item": [
+		{
+			"name": "Send message (using POST) Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const payload = {",
+							"    \"glossary\": {",
+							"        \"title\": \"example glossary\",",
+							"\t\t\"GlossDiv\": {",
+							"            \"title\": \"S\",",
+							"\t\t\t\"GlossList\": {",
+							"                \"GlossEntry\": {",
+							"                    \"ID\": \"SGML\",",
+							"\t\t\t\t\t\"SortAs\": \"SGML\",",
+							"\t\t\t\t\t\"GlossTerm\": \"Standard Generalized Markup Language\",",
+							"\t\t\t\t\t\"Acronym\": \"SGML\",",
+							"\t\t\t\t\t\"Abbrev\": \"ISO 8879:1986\",",
+							"\t\t\t\t\t\"GlossDef\": {",
+							"                        \"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",",
+							"\t\t\t\t\t\t\"GlossSeeAlso\": [\"GML\", \"XML\"]",
+							"                    },",
+							"\t\t\t\t\t\"GlossSee\": \"markup\"",
+							"                }",
+							"            }",
+							"        }",
+							"    }",
+							"};",
+							"",
+							"pm.globals.set(\"payload\", JSON.stringify(payload));",
+							"",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "Action",
+							"value": "SendMessage",
+							"type": "text"
+						},
+						{
+							"key": "MessageBody",
+							"value": "{{payload}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:9324/queue/first-queue",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9324",
+					"path": [
+						"queue",
+						"first-queue"
+					]
+				},
+				"description": "This has the same effect as using GET, but POST is more \"correct\" way of creating resources."
+			},
+			"response": []
+		},
+		{
+			"name": "GetMessage",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ensure Title of the Body message in the queue\", function () {",
+							"",
+							"var jsonObject = xml2Json(responseBody);",
+							"var arrayRecipt = jsonObject.ReceiveMessageResponse.ReceiveMessageResult.Message.ReceiptHandle.split('#')",
+							"var ReciptURL = (arrayRecipt[0] + '%23' + arrayRecipt[1])",
+							"",
+							"var StringBody = jsonObject.ReceiveMessageResponse.ReceiveMessageResult.Message.Body;",
+							"var JsonBody = JSON.parse(StringBody)",
+							"",
+							"pm.expect(JsonBody.glossary.title).to.eql(\"example glossary\");",
+							"pm.globals.set(\"ReceiptHandle\", ReciptURL);",
+							"",
+							"});",
+							"",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9324/queue/first-queue?Action=ReceiveMessage",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9324",
+					"path": [
+						"queue",
+						"first-queue"
+					],
+					"query": [
+						{
+							"key": "Action",
+							"value": "ReceiveMessage"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete with POST",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "http://localhost:9324/queue/first-queue?Action=DeleteMessage&ReceiptHandle={{ReceiptHandle}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9324",
+					"path": [
+						"queue",
+						"first-queue"
+					],
+					"query": [
+						{
+							"key": "Action",
+							"value": "DeleteMessage"
+						},
+						{
+							"key": "ReceiptHandle",
+							"value": "{{ReceiptHandle}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

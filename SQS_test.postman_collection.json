@@ -84,15 +84,15 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:9324/queue/first-queue",
+					"raw": "http://localhost:9324/000000000000/queue1",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "9324",
 					"path": [
-						"queue",
-						"first-queue"
+						"000000000000",
+						"queue1"
 					]
 				},
 				"description": "This has the same effect as using GET, but POST is more \"correct\" way of creating resources."
@@ -133,15 +133,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:9324/queue/first-queue?Action=ReceiveMessage",
+					"raw": "http://localhost:9324/000000000000/redirect-queue-name?Action=ReceiveMessage",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "9324",
 					"path": [
-						"queue",
-						"first-queue"
+						"000000000000",
+						"redirect-queue-name"
 					],
 					"query": [
 						{
@@ -154,7 +154,7 @@
 			"response": []
 		},
 		{
-			"name": "Delete with POST",
+			"name": "Delete from redirect",
 			"event": [
 				{
 					"listen": "test",
@@ -179,15 +179,119 @@
 					"urlencoded": []
 				},
 				"url": {
-					"raw": "http://localhost:9324/queue/first-queue?Action=DeleteMessage&ReceiptHandle={{ReceiptHandle}}",
+					"raw": "http://localhost:9324/000000000000/redirect-queue-name?Action=DeleteMessage&ReceiptHandle={{ReceiptHandle}}",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "9324",
 					"path": [
-						"queue",
-						"first-queue"
+						"000000000000",
+						"redirect-queue-name"
+					],
+					"query": [
+						{
+							"key": "Action",
+							"value": "DeleteMessage"
+						},
+						{
+							"key": "ReceiptHandle",
+							"value": "{{ReceiptHandle}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetMessage from audit",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ensure Title of the Body message in the queue\", function () {",
+							"",
+							"var jsonObject = xml2Json(responseBody);",
+							"var arrayRecipt = jsonObject.ReceiveMessageResponse.ReceiveMessageResult.Message.ReceiptHandle.split('#')",
+							"var ReciptURL = (arrayRecipt[0] + '%23' + arrayRecipt[1])",
+							"",
+							"var StringBody = jsonObject.ReceiveMessageResponse.ReceiveMessageResult.Message.Body;",
+							"var JsonBody = JSON.parse(StringBody)",
+							"",
+							"pm.expect(JsonBody.glossary.title).to.eql(\"example glossary\");",
+							"pm.globals.set(\"ReceiptHandle\", ReciptURL);",
+							"",
+							"});",
+							"",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9324/000000000000/audit-queue-name?Action=ReceiveMessage",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9324",
+					"path": [
+						"000000000000",
+						"audit-queue-name"
+					],
+					"query": [
+						{
+							"key": "Action",
+							"value": "ReceiveMessage"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete from audit",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "http://localhost:9324/000000000000/audit-queue-name?Action=DeleteMessage&ReceiptHandle={{ReceiptHandle}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9324",
+					"path": [
+						"000000000000",
+						"audit-queue-name"
 					],
 					"query": [
 						{
